@@ -1,6 +1,6 @@
 package com.auth.entity;
 
-import java.security.Timestamp;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +32,10 @@ public class ClientSubscription {
 	private String planName;
 	
 	@Column(name = "PLAN_EXPIARY")
-	private Timestamp planExpiary;
+	private LocalDateTime planExpiary;
+	
+	@Column(name = "ENCRYPTED_CLIENT_ID")
+	private String encryptedClientId;
 	
 	@Column(name = "USER_ID")
 	private String userId;
@@ -61,12 +64,20 @@ public class ClientSubscription {
 		this.planName = planName;
 	}
 
-	public Timestamp getPlanExpiary() {
+	public LocalDateTime getPlanExpiary() {
 		return planExpiary;
 	}
 
-	public void setPlanExpiary(Timestamp planExpiary) {
+	public void setPlanExpiary(LocalDateTime planExpiary) {
 		this.planExpiary = planExpiary;
+	}
+
+	public String getEncryptedClientId() {
+		return encryptedClientId;
+	}
+
+	public void setEncryptedClientId(String encryptedClientId) {
+		this.encryptedClientId = encryptedClientId;
 	}
 
 	public String getUserId() {

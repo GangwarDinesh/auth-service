@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth.exception.AuthenticationException;
 import com.auth.service.UserDetailsService;
 import com.auth.util.JwtUtil;
 
@@ -34,24 +35,34 @@ public class AuthFilter extends OncePerRequestFilter {
 
 		String token = null;
 		String userName = null;
+		boolean isValidToken = false;
 
-		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-			token = authorizationHeader.substring(7);
-			userName = jwtUtil.extractUsername(token);
+		try {
+			if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+				token = authorizationHeader.substring(7);
+				userName = jwtUtil.extractUsername(token);
+			}
+
+			if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+				UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+
+				if (jwtUtil.validateToken(token, userDetails)) {
+
+					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+							userDetails, null, userDetails.getAuthorities());
+					usernamePasswordAuthenticationToken
+							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+					isValidToken = true;
+				}
+			}
+		} catch (AuthenticationException e) {
+			response.setHeader("key", "userauthfailed");
 		}
 
-		if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-			UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-
-			if (jwtUtil.validateToken(token, userDetails)) {
-
-				UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-						userDetails, null, userDetails.getAuthorities());
-				usernamePasswordAuthenticationToken
-						.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-			}
+		if (null != authorizationHeader && !isValidToken) {
+			response.setHeader("key", "userauthfailed");
 		}
 		filterChain.doFilter(request, response);
 	}
