@@ -6,6 +6,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.auth.entity.ClientSubscription;
+import com.auth.dto.ClientDetailsDto;
 import com.auth.exception.AuthenticationException;
-import com.auth.repository.ClientSubscriptionRepository;
+import com.auth.repository.ClientDetailsRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,14 +25,13 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JwtUtil {
 
-	@Value("${jwt.secret}")
-	private String secret;
+	private ClientDetailsDto clientDetailsDto;
 
 	@Value("${jwt.expiary}")
 	private long jwtExpiary;
 
 	@Autowired
-	private ClientSubscriptionRepository clientSubscriptionRepository;
+	private ClientDetailsRepository clientDetailsRepository;
 
 	public String extractUsername(String token) throws AuthenticationException {
 		return extractClaim(token, Claims::getSubject);
@@ -48,9 +48,10 @@ public class JwtUtil {
 
 	private Claims extractAllClaims(String token) throws AuthenticationException {
 		try {
-			return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+			return Jwts.parser().setSigningKey(this.getClientDetailsDto().getClientSecret()).parseClaimsJws(token)
+					.getBody();
 		} catch (Exception e) {
-			throw new AuthenticationException(401,"Invalid Jwt");
+			throw new AuthenticationException(401, "Invalid Jwt");
 		}
 	}
 
@@ -67,7 +68,7 @@ public class JwtUtil {
 
 		return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + jwtExpiary))
-				.signWith(SignatureAlgorithm.HS256, secret).compact();
+				.signWith(SignatureAlgorithm.HS256, this.getClientDetailsDto().getClientSecret()).compact();
 	}
 
 	public Boolean validateToken(String token, UserDetails userDetails) throws AuthenticationException {
@@ -75,18 +76,27 @@ public class JwtUtil {
 		return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
 	}
 
-	public boolean validateClientSubscription(String encryptedClientId) {
-		boolean isPlanExpired = true;
-		ClientSubscription clientSubscription = clientSubscriptionRepository.findByEncryptedClientId(encryptedClientId);
-		if (null != clientSubscription) {
+	public Optional<ClientDetailsDto> getClientDetailsDto(String encryptedClientId) throws Exception {
+		try {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime currentLocalDateTime = LocalDateTime.now();
+			String currentDateTimeStr = formatter.format(currentLocalDateTime);
 			byte[] decodedBytes = Base64.getDecoder().decode(encryptedClientId);
 			String decodedString[] = new String(decodedBytes).split("###");
-			LocalDateTime planExpiary = LocalDateTime.parse(decodedString[2], formatter);
-			LocalDateTime currentDateTime = LocalDateTime.now();
-			isPlanExpired = planExpiary.isBefore(currentDateTime);
+			return clientDetailsRepository.findClient(decodedString[0], decodedString[1], currentDateTimeStr,
+					currentDateTimeStr);
+		}catch (Exception e) {
+			throw new Exception("Invalid client Id.");
 		}
-		return isPlanExpired;
+		
+	}
+
+	public ClientDetailsDto getClientDetailsDto() {
+		return clientDetailsDto;
+	}
+
+	public void setClientDetailsDto(ClientDetailsDto clientDetailsDto) {
+		this.clientDetailsDto = clientDetailsDto;
 	}
 
 }

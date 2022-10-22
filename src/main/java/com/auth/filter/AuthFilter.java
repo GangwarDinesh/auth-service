@@ -1,6 +1,7 @@
 package com.auth.filter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth.dto.ClientDetailsDto;
 import com.auth.exception.AuthenticationException;
 import com.auth.service.UserDetailsService;
 import com.auth.util.JwtUtil;
@@ -35,8 +37,16 @@ public class AuthFilter extends OncePerRequestFilter {
 
 		String token = null;
 		String userName = null;
-		boolean isValidToken = false;
+		boolean isJwtValidationFailed = false;
+		boolean isClientValidationFailed = false;
 
+		try {
+			Optional<ClientDetailsDto> clientDetailsDtoOpt = jwtUtil
+					.getClientDetailsDto(request.getHeader("Client-Id"));
+			clientDetailsDtoOpt.ifPresent(obj -> jwtUtil.setClientDetailsDto(obj));
+		} catch (Exception e) {
+			isClientValidationFailed = true;
+		}
 		try {
 			if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 				token = authorizationHeader.substring(7);
@@ -54,14 +64,19 @@ public class AuthFilter extends OncePerRequestFilter {
 					usernamePasswordAuthenticationToken
 							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-					isValidToken = true;
 				}
 			}
 		} catch (AuthenticationException e) {
-			response.setHeader("key", "userauthfailed");
+			e.printStackTrace();
+			isJwtValidationFailed = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			isJwtValidationFailed = true;
 		}
 
-		if (null != authorizationHeader && !isValidToken) {
+		if (isClientValidationFailed) {
+			response.setHeader("key", "clientauthfailed");
+		} else if (isJwtValidationFailed) {
 			response.setHeader("key", "userauthfailed");
 		}
 		filterChain.doFilter(request, response);

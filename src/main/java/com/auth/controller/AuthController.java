@@ -28,14 +28,14 @@ public class AuthController {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-
+	
 	@PostMapping("/jwt")
 	public ResponseEntity<AuthResponse> generateJwt(@RequestBody AuthRequest authRequest, HttpServletResponse response) throws Exception {
-		String key = response.getHeader("key");
+		String key = response.getHeader("key")!=null?response.getHeader("key"):"";
 		if("clientauthfailed".equalsIgnoreCase(key)) {
-			throw new AuthenticationException(401, "Client Authentication failed!");
+			throw new AuthenticationException(401, "Invalid client id.");
 		}else if("userauthfailed".equalsIgnoreCase(key)) {
-			throw new AuthenticationException(401, "User Authentication failed!");
+			throw new AuthenticationException(401, "Invalid Jwt.");
 		}
 		try {
 			authenticationManager.authenticate(
@@ -51,16 +51,16 @@ public class AuthController {
 	@GetMapping("/jwt/verify")
 	public ResponseEntity<Boolean> verifyJwt(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		//JWT will be validated through AuthFilter
-		String key = response.getHeader("key");
+		String key = response.getHeader("key")!=null?response.getHeader("key"):"";
 		if("clientauthfailed".equalsIgnoreCase(key)) {
-			throw new AuthenticationException(401, "Client Authentication failed!");
+			throw new AuthenticationException(401, "Invalid client id.");
 		}else if("userauthfailed".equalsIgnoreCase(key)) {
-			throw new AuthenticationException(401, "User Authentication failed!");
+			throw new AuthenticationException(401, "Invalid Jwt.");
 		}
 		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
-	@GetMapping("/error")
+	@GetMapping("/403")
 	public String error() throws AuthenticationException {
 		throw new AuthenticationException(401, "User Authentication failed!");
 	}
