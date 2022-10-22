@@ -1,0 +1,33 @@
+JWT Curl Requests:
+--------------------------
+1) Create Jwt
+curl --location --request POST 'http://localhost:8080/auth-service/v1/auth/jwt' \
+--header 'Client-Id: Q2xpZW50LTEjIyNBcHAtMSMjIzIwMjItMTAtMjEgMTY6MjA6MTMjIyMyMDIyLTEwLTIzIDE2OjIwOjIw' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "dkumar",
+    "password": "dkumar"
+}'
+
+2) To verify Jwt
+curl --location --request GET 'http://localhost:8080/auth-service/v1/auth/jwt/verify' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJka3VtYXIiLCJleHAiOjE2NjY0OTk3MzcsImlhdCI6MTY2NjQ2MzczN30.D1oLxnNPNX7pNaLf-1PzUwFMUn0BiX9-doujjpb4ob0' \
+--header 'Client-Id: Q2xpZW50LTEjIyNBcHAtMSMjIzIwMjItMTAtMjEgMTY6MjA6MTMjIyMyMDIyLTEwLTIzIDE2OjIwOjIw'
+
+3) Internal App user Sample API to fetch User object by passing username
+curl --location --request GET 'http://localhost:8081/curd-operation-service/products/user?username=dkumar'
+It would return User object like below:
+public class User {
+
+	private String username;
+
+	private String email;
+
+	private String password;
+	
+}
+
+
+
+
+Please change MySQL Db details in yml file and add respective maven dependencies

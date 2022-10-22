@@ -1,0 +1,36 @@
+--Table:1
+CREATE TABLE CLIENT_DETAILS
+  (
+    ID                  INT NOT NULL AUTO_INCREMENT,
+    CLIENT_ID           VARCHAR(100) NOT NULL,
+    CLIENT_NAME         VARCHAR(100) NOT NULL,
+    APP_ID              VARCHAR(50) NOT NULL,
+    APP_NAME            VARCHAR(100) NOT NULL,
+    PLAN_START_DATE     DATETIME NOT NULL,
+    PLAN_END_DATE       DATETIME NOT NULL,
+    ENCRYPTED_CLIENT_ID VARCHAR(500),
+    CLIENT_USER_API_ID  INT NOT NULL,
+    PRIMARY KEY (ID)
+  );
+/*
+Sample Data:
+1	Client-1	Client One	App-1	App One	2022-10-21 16:20:13	2022-10-23 16:20:19	Q2xpZW50LTEjIyNBcHAtMSMjIzIwMjItMTAtMjEgMTY6MjA6MTMjIyMyMDIyLTEwLTIzIDE2OjIwOjIw	1
+2	Client-1	Client One	App-2	App Two	2022-10-21 16:20:13	2022-10-23 16:20:19	Q2xpZW50LTEjIyNBcHAtMiMjIzIwMjItMTAtMjEgMTY6MjA6MTMjIyMyMDIyLTEwLTIzIDE2OjIwOjE5	1
+3	Client-2	Client Two	App-1	App One	2022-10-21 16:20:13	2022-10-22 16:20:19	Q2xpZW50LTIjIyNBcHAtMSMjIzIwMjItMTAtMjEgMTY6MjA6MTMjIyMyMDIyLTEwLTIyIDE2OjIwOjE5	2
+
+To create ENCRYPTED_CLIENT_ID value open ClientIdEncryption.java and execute encryptClientDetails method with given input
+*/
+-- Table:2
+CREATE TABLE CLIENT_USER_API_DETAILS
+  (
+    ID                INT NOT NULL AUTO_INCREMENT,
+    CLIENT_SECRET     VARCHAR(100) NOT NULL,
+    API_BASE_URL      VARCHAR(1000) NOT NULL,
+    API_ENDPOINT_NAME VARCHAR(100) NOT NULL,
+    HTTP_METHOD       VARCHAR(10) NOT NULL,
+    PRIMARY KEY (ID)
+  );
+ /*
+ Sample Data:
+ 1	secret	http://localhost:8081/curd-operation-service	/products/user	GET
+ */
