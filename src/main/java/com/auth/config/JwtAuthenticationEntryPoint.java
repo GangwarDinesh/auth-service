@@ -32,12 +32,21 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		responseBody.setTimestamp(currentDateTimeStr);
 
 		String key = response.getHeader("key") != null ? response.getHeader("key") : "";
+		boolean isError = false;
 		if ("clientauthfailed".equalsIgnoreCase(key)) {
 			responseBody.setMessage("Client Id is invalid.");
+			isError = true;
 		} else if ("userauthfailed".equalsIgnoreCase(key)) {
 			responseBody.setMessage("JWT is invalid.");
+			isError = true;
 		}
-		responseBody.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		if(isError) {
+			responseBody.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		}else {
+			responseBody.setStatus(HttpServletResponse.SC_OK);
+			response.setStatus(HttpServletResponse.SC_OK);
+		}
 		ObjectMapper mapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
 		response.getWriter().println(mapper.writeValueAsString(responseBody));
 	}

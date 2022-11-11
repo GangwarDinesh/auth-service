@@ -27,9 +27,9 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @EnableTransactionManagement
-@ConfigurationProperties(prefix = "oracledb.data-source")
+@ConfigurationProperties(prefix = "mysqldb.data-source")
 @EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory", transactionManagerRef = "transactionManager", basePackages = "com.auth.repository")
-public class OracleDbConfig {
+public class DatabaseConfig {
 
 	@Autowired
 	private Environment env;
@@ -56,7 +56,7 @@ public class OracleDbConfig {
 	}
 
 	@Bean
-	@ConfigurationProperties(prefix = "oracledb.data-source")
+	@ConfigurationProperties(prefix = "mysqldb.data-source")
 	public HikariConfig hikariConfig() {
 	    return new HikariConfig();
 	}
@@ -70,7 +70,7 @@ public class OracleDbConfig {
 	public PlatformTransactionManager getTransactionManager(
 			@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
 		JpaTransactionManager txManager = new JpaTransactionManager(entityManagerFactory);
-		int defaultTimeout = Integer.parseInt(env.getProperty("oracledb.query.defaultTimeout"));
+		int defaultTimeout = Integer.parseInt(env.getProperty("mysqldb.query.defaultTimeout"));
 		txManager.setDefaultTimeout(defaultTimeout);
 		return txManager;
 	}

@@ -29,6 +29,8 @@ public class JwtUtil {
 
 	@Value("${jwt.expiary}")
 	private long jwtExpiary;
+	
+	private String password;
 
 	@Autowired
 	private ClientDetailsRepository clientDetailsRepository;
@@ -98,5 +100,14 @@ public class JwtUtil {
 	public void setClientDetailsDto(ClientDetailsDto clientDetailsDto) {
 		this.clientDetailsDto = clientDetailsDto;
 	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
 
 }

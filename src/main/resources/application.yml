@@ -4,19 +4,18 @@ server:
   port: 8080
 
 # OracleDB connection settings
-oracledb:
+mysqldb:
   query:
     defaultTimeout: 30000
   dataSource:
-    driverClassName: oracle.jdbc.OracleDriver
-    jdbcUrl: jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521)))(CONNECT_DATA =(SERVER = DEDICATED)(SERVICE_NAME = orcl)))
-    username: dkumar
-    password: dkumar
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://143.110.242.247:3306/authdb?zeroDateTimeBehavior=convertToNull
+    username: root
+    password: tj@dialer
     defaultAutocommit: true
-    validationQuery: SELECT 1 FROM DUAL
       
 hibernate:
-  dialect: org.hibernate.dialect.Oracle12cDialect
+  dialect: org.hibernate.dialect.MySQL8Dialect
   show_sql: true
   hbm2ddl.auto: validate
   current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
@@ -24,3 +23,5 @@ hibernate:
 jwt:
   secret: secret
   expiary: 36000000 # Time in milliseconds
+  
+spring.main.allow-bean-definition-overriding: true

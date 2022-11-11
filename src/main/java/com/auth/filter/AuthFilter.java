@@ -39,11 +39,16 @@ public class AuthFilter extends OncePerRequestFilter {
 		String userName = null;
 		boolean isJwtValidationFailed = false;
 		boolean isClientValidationFailed = false;
-
 		try {
 			Optional<ClientDetailsDto> clientDetailsDtoOpt = jwtUtil
 					.getClientDetailsDto(request.getHeader("Client-Id"));
 			clientDetailsDtoOpt.ifPresent(obj -> jwtUtil.setClientDetailsDto(obj));
+			/*String payload = new String(req.getReader().lines().reduce("", String::concat));
+
+			@SuppressWarnings("unchecked")
+			Map<String, Object> jsonRequest = new ObjectMapper().readValue(payload, Map.class);
+			jwtUtil.setPassword((String) jsonRequest.get("password"));*/
+
 		} catch (Exception e) {
 			isClientValidationFailed = true;
 		}
@@ -64,6 +69,8 @@ public class AuthFilter extends OncePerRequestFilter {
 					usernamePasswordAuthenticationToken
 							.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+				}else {
+					isJwtValidationFailed = true;
 				}
 			}
 		} catch (AuthenticationException e) {
