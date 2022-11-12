@@ -1,6 +1,7 @@
 package com.auth.filter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import javax.servlet.FilterChain;
@@ -18,7 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth.dto.ClientDetailsDto;
 import com.auth.exception.AuthenticationException;
-import com.auth.service.UserDetailsService;
 import com.auth.util.JwtUtil;
 
 @Component
@@ -26,9 +26,6 @@ public class AuthFilter extends OncePerRequestFilter {
 
 	@Autowired
 	private JwtUtil jwtUtil;
-
-	@Autowired
-	private UserDetailsService userDetailsService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -43,11 +40,7 @@ public class AuthFilter extends OncePerRequestFilter {
 			Optional<ClientDetailsDto> clientDetailsDtoOpt = jwtUtil
 					.getClientDetailsDto(request.getHeader("Client-Id"));
 			clientDetailsDtoOpt.ifPresent(obj -> jwtUtil.setClientDetailsDto(obj));
-			/*String payload = new String(req.getReader().lines().reduce("", String::concat));
-
-			@SuppressWarnings("unchecked")
-			Map<String, Object> jsonRequest = new ObjectMapper().readValue(payload, Map.class);
-			jwtUtil.setPassword((String) jsonRequest.get("password"));*/
+			jwtUtil.setPassword(request.getParameter("password"));
 
 		} catch (Exception e) {
 			isClientValidationFailed = true;
@@ -60,8 +53,9 @@ public class AuthFilter extends OncePerRequestFilter {
 
 			if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-				UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-
+				//UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+				UserDetails userDetails = new org.springframework.security.core.userdetails.User(userName, "",
+						new ArrayList<>());
 				if (jwtUtil.validateToken(token, userDetails)) {
 
 					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
