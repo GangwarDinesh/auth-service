@@ -1,7 +1,7 @@
 server:
   servlet:
     context-path: /auth-service
-  port: 8080
+  port: 8072
 
 # OracleDB connection settings
 mysqldb:
